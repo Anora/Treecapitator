@@ -167,7 +167,7 @@ public class Treecapitator
         else
         {
             if ((item != null) && !ToolRegistry.instance().isAxe(item) && TCSettings.allowAutoAxeDetection)
-                ToolRegistry.autoDetectAxe(entityPlayer.worldObj, pos, item);
+                ToolRegistry.autoDetectAxe(entityPlayer.world, pos, item);
 
             return ToolRegistry.instance().isAxe(item);
         }
@@ -295,7 +295,7 @@ public class Treecapitator
         {
             currentAxeDamage = Math.round(currentAxeDamage);
 
-            for (int i = 0; i < MathHelper.floor_double(currentAxeDamage); i++) {
+            for (int i = 0; i < MathHelper.floor(currentAxeDamage); i++) {
                 axe.getItem().onBlockDestroyed(axe, world, world.getBlockState(pos), pos, player);
             }
 
@@ -605,7 +605,7 @@ public class Treecapitator
                     IShearable target = (IShearable) block;
                     if (target.isShearable(shears, world, pos))
                     {
-                        List<ItemStack> drops = target.onSheared(shears, player.worldObj, pos,
+                        List<ItemStack> drops = target.onSheared(shears, player.world, pos,
                                 EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, shears));
 
                         if (drops != null)

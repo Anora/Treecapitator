@@ -46,6 +46,7 @@ minecraft {
     runDir = 'run'
     replace '@MOD_VERSION@', project.mod_version
     replace '@BSCORE_VERSION@', project.bscore_version
+    replace '@MINECRAFT_VERSION@', project.minecraft_version
 }
 
 processResources {
@@ -58,7 +59,6 @@ processResources {
         expand ([
             'mod_version': version,
             'bscore_version': project.bscore_version,
-            'pattern': '\\\\[.+?\\\\](\\\\w+).*?([\\\\d\\\\.]+)[-\\\\w]*\\\\.[^\\\\d]+',
             'forge_version': project.forge_version,
             'minecraft_version': project.minecraft_version
         ])
