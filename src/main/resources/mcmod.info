@@ -11,11 +11,11 @@
     "authorList": [ "DaftPVF", "bspkrs", "jco2641", "ZenCoder" ],
     "credits": "Original by DaftPVF; additional credit to Lunatrius, AtomicStryker, ScottKillen",
     "logoFile": "",
-    "screenshots": [  ],
+    "screenshots": [],
     "parent": "",
-    "requiredMods": [ "bspkrscore@[${bscore_version},)" ],
-    "dependencies": [ "bspkrscore@[${bscore_version},)" ],
-    "dependants": [  ],
+    "requiredMods": ["bspkrscore@[${bscore_version},)"],
+    "dependencies": ["bspkrscore@[${bscore_version},)"],
+    "dependants": [],
     "useDependencyInformation": "true"
   }]
 }
