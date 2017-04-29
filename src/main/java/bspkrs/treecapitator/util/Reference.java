@@ -2,8 +2,8 @@ package bspkrs.treecapitator.util;
 
 public class Reference
 {
-    public static final String MODID                              = "Treecapitator";
-    public static final String NAME                               = "Treecapitator";
+    public static final String MODID                              = "treecapitator";
+    public static final String NAME                               = "TreeCapitator";
     public static final String PROXY_COMMON                       = "bspkrs.treecapitator.CommonProxy";
     public static final String PROXY_CLIENT                       = "bspkrs.treecapitator.ClientProxy";
     public static final String GUI_FACTORY                        = "bspkrs.treecapitator.fml.gui.ModGuiFactoryHandler";
