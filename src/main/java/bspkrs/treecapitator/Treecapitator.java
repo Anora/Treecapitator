@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
@@ -66,7 +67,7 @@ public class Treecapitator
 
     public static boolean isBreakingPossible(EntityPlayer entityPlayer, BlockPos pos, boolean shouldLog)
     {
-        ItemStack axe = entityPlayer.getHeldItem(EnumHand.MAIN_HAND);
+        ItemStack axe = entityPlayer.getHeldItemMainhand();
         if ((isAxeItemEquipped(entityPlayer, pos) || !TCSettings.needItem))
         {
             if (!entityPlayer.capabilities.isCreativeMode && TCSettings.allowItemDamage && (axe != null)
@@ -88,7 +89,7 @@ public class Treecapitator
 
     private boolean isBreakingPossible()
     {
-        axe = player.getHeldItem(EnumHand.MAIN_HAND);
+        axe = player.getHeldItemMainhand();
         if ((isAxeItemEquipped() || !TCSettings.needItem))
         {
             if (!player.capabilities.isCreativeMode && TCSettings.allowItemDamage && (axe != null)
@@ -111,7 +112,7 @@ public class Treecapitator
      */
     private boolean isAxeItemEquipped()
     {
-        ItemStack item = player.getHeldItem(EnumHand.MAIN_HAND);
+        ItemStack item = player.getHeldItemMainhand();
         Enchantment enchantment = Enchantment.getEnchantmentByLocation("treecapitating");
         int enchantmentID = Enchantment.getEnchantmentID(enchantment);
 
@@ -148,7 +149,7 @@ public class Treecapitator
      */
     public static boolean isAxeItemEquipped(EntityPlayer entityPlayer, BlockPos pos)
     {
-        ItemStack item = entityPlayer.getHeldItem(EnumHand.MAIN_HAND);
+        ItemStack item = entityPlayer.getHeldItemMainhand();
         Enchantment enchantment = Enchantment.getEnchantmentByLocation("treecapitating");
         int enchantmentID = Enchantment.getEnchantmentID(enchantment);
 
@@ -173,12 +174,12 @@ public class Treecapitator
         }
     }
 
-    public static boolean isBreakingEnabled(EntityPlayer player)
+    public static boolean isBreakingEnabled(EntityPlayer entityPlayer)
     {
         return (TCSettings.sneakAction.equalsIgnoreCase(Reference.NONE)
-                || (TCSettings.sneakAction.equalsIgnoreCase(Reference.DISABLE) && !player.isSneaking())
-                || (TCSettings.sneakAction.equalsIgnoreCase(Reference.ENABLE) && player.isSneaking()))
-                && !(player.capabilities.isCreativeMode && TCSettings.disableInCreative);
+                || (TCSettings.sneakAction.equalsIgnoreCase(Reference.DISABLE) && !entityPlayer.isSneaking())
+                || (TCSettings.sneakAction.equalsIgnoreCase(Reference.ENABLE) && entityPlayer.isSneaking()))
+                && !(entityPlayer.capabilities.isCreativeMode && TCSettings.disableInCreative);
     }
 
     public static int getTreeHeight(TreeDefinition tree, World world, BlockPos pos, EntityPlayer entityPlayer)
@@ -295,10 +296,8 @@ public class Treecapitator
         {
             currentAxeDamage = Math.round(currentAxeDamage);
 
-            for (int i = 0; i < MathHelper.floor(currentAxeDamage); i++) {
+            for (int i = 0; i < MathHelper.floor(currentAxeDamage); i++)
                 axe.getItem().onBlockDestroyed(axe, world, world.getBlockState(pos), pos, player);
-            }
-
         }
 
         if ((currentShearsDamage > 0.0F) && (shears != null))
@@ -729,6 +728,16 @@ public class Treecapitator
     }
 
     /**
+     * Destroys the currently equipped item from the player's inventory.
+     */
+    private void destroyCurrentEquippedItem()
+    {
+        ItemStack item = player.getHeldItemMainhand();
+        player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+        ForgeEventFactory.onPlayerDestroyItem(player, item, EnumHand.MAIN_HAND);
+    }
+
+    /**
      * Damages the axe-type item and returns true if we should continue destroying logs
      */
     private boolean damageAxeAndContinue(World world, Block block, BlockPos pos)
@@ -743,7 +752,7 @@ public class Treecapitator
             currentAxeDamage -= Math.floor(currentAxeDamage);
 
             if ((axe != null) && (axe.getCount() < 1))
-                player.getHeldItemMainhand().setItemDamage(player.getHeldItemMainhand().getMaxDamage()); // TODO: do this right. It's supposed to destroy the axe
+                destroyCurrentEquippedItem();
         }
         return !TCSettings.needItem || TCSettings.allowMoreBlocksThanDamage || isAxeItemEquipped();
     }

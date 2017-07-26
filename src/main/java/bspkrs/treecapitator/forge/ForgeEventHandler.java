@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
@@ -13,7 +15,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameData;
 import bspkrs.treecapitator.Treecapitator;
 import bspkrs.treecapitator.TreecapitatorMod;
 import bspkrs.treecapitator.config.TCConfigHandler;
@@ -78,11 +79,11 @@ public class ForgeEventHandler
                             {
                                 int height = Treecapitator.getTreeHeight(treeDef, event.getEntityPlayer().world, pos, event.getEntityPlayer());
                                 if (height > 1)
-                                    event.setNewSpeed(event.getNewSpeed() / (height * TCSettings.treeHeightModifier));
+                                    event.setNewSpeed(event.getOriginalSpeed() / (height * TCSettings.treeHeightModifier));
                             }
                         }
                         else if (Treecapitator.isBreakingEnabled(event.getEntityPlayer()))
-                            event.setNewSpeed(event.getNewSpeed() * treeDef.breakSpeedModifier());
+                            event.setNewSpeed(event.getOriginalSpeed() * treeDef.breakSpeedModifier());
                     }
                     else
                         event.setNewSpeed(0.0f);
@@ -157,7 +158,7 @@ public class ForgeEventHandler
 
         public CachedBreakSpeed(BreakSpeed event, boolean swappedSneak)
         {
-            super(event.getEntityPlayer(), event.getState(), event.getNewSpeed(), event.getPos());
+            super(event.getEntityPlayer(), event.getState(), event.getOriginalSpeed(), event.getPos());
             isSneaking = event.getEntityPlayer().isSneaking();
             this.swappedSneak = swappedSneak;
         }
@@ -171,33 +172,37 @@ public class ForgeEventHandler
             if (!(o instanceof CachedBreakSpeed))
                 return false;
 
-            CachedBreakSpeed bs = (CachedBreakSpeed) o;
+            CachedBreakSpeed bs = (CachedBreakSpeed)o;
 
-            ItemStack oItem = bs.getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND);;
-            ItemStack thisItem = getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND);;
+            ItemStack oItem = bs.getEntityPlayer().getHeldItemMainhand();
+            ItemStack thisItem = getEntityPlayer().getHeldItemMainhand();
 
             return  bs.getEntityPlayer().getGameProfile().getName().equals(getEntityPlayer().getGameProfile().getName())
-                    && (bs.getState() == getState()) && ItemStack.areItemsEqual(oItem, thisItem)
+                    && ((oItem != null) && (oItem.getItem() != null) ? ((thisItem != null) && (thisItem.getItem() != null)
+                            ? Item.REGISTRY.getNameForObject(thisItem.getItem()).equals(Item.REGISTRY.getNameForObject(oItem.getItem())) : false)
+                            : (thisItem == null) || (thisItem.getItem() == null))
+                    && Block.REGISTRY.getNameForObject(bs.getState().getBlock()).equals(Block.REGISTRY.getNameForObject(getState().getBlock()))
                     && (bs.isSneaking == isSneaking) && (bs.swappedSneak == swappedSneak)
-                    && (bs.getNewSpeed() == getNewSpeed()) && (bs.getPos().equals(getPos()));
+                    && (bs.getState().getBlock().getMetaFromState(bs.getState()) == getState().getBlock().getMetaFromState(getState()))
+                    && (bs.getOriginalSpeed() == getOriginalSpeed()) && (bs.getPos().equals(getPos()));
         }
 
         @Override
         public int hashCode()
         {
-            ItemStack thisItem = getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND);;
+            ItemStack thisItem = getEntityPlayer().getHeldItemMainhand();
             HashFunction hf = Hashing.md5();
             Hasher h = hf.newHasher()
                     .putString(getEntityPlayer().getGameProfile().getName(), Charsets.UTF_8)
-                    .putString(GameData.getBlockRegistry().getNameForObject(getState().getBlock()).toString(), Charsets.UTF_8)
+                    .putString(Block.REGISTRY.getNameForObject(getState().getBlock()).toString(), Charsets.UTF_8)
                     .putBoolean(isSneaking)
                     .putBoolean(swappedSneak)
                     .putInt(getState().getBlock().getMetaFromState(getState()))
-                    .putFloat(getNewSpeed())
+                    .putFloat(getOriginalSpeed())
                     .putInt(getPos().hashCode());
 
             if ((thisItem != null) && (thisItem.getItem() != null))
-                h.putString(GameData.getItemRegistry().getNameForObject(thisItem.getItem()).toString(), Charsets.UTF_8)
+                h.putString(Item.REGISTRY.getNameForObject(thisItem.getItem()).toString(), Charsets.UTF_8)
                         .putInt(thisItem.getMetadata());
 
             return h.hash().hashCode();
