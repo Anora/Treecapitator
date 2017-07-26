@@ -2,6 +2,7 @@ package bspkrs.treecapitator;
 
 import java.io.File;
 
+import bspkrs.bspkrscore.fml.bspkrsCoreMod;
 import bspkrs.treecapitator.config.TCConfigHandler;
 import bspkrs.treecapitator.config.TCSettings;
 import bspkrs.treecapitator.forge.ForgeEventHandler;
@@ -11,7 +12,10 @@ import bspkrs.treecapitator.registry.ThirdPartyModConfig;
 import bspkrs.treecapitator.util.Reference;
 import bspkrs.treecapitator.util.TCLog;
 import bspkrs.util.CommonUtils;
-import net.minecraftforge.common.MinecraftForge;
+import bspkrs.util.Const;
+import bspkrs.util.ModVersionChecker;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -24,20 +28,23 @@ import net.minecraftforge.fml.common.event.FMLInterModComms.IMCMessage;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = Reference.MODID, name = Reference.NAME, version = "@MOD_VERSION@", dependencies = "required-after:bspkrsCore@[@BSCORE_VERSION@,)",
-        useMetadata = true, guiFactory = Reference.GUI_FACTORY)
+@Mod(modid = Reference.MODID, name = Reference.NAME, version = "@MOD_VERSION@", dependencies = "required-after:bspkrsCore@[@BSCORE_VERSION@,)", useMetadata = true, guiFactory = Reference.GUI_FACTORY)
 public class TreecapitatorMod
 {
-    private RegistryNBTManager      nbtManager;
+    protected ModVersionChecker versionChecker;
+    protected final String versionURL = Const.VERSION_URL + "/Minecraft/" + Const.MCVERSION + "/TreeCapitator.version";
+    protected final String mcfTopic   = "http://www.minecraftforum.net/topic/1009577-";
+
+    private RegistryNBTManager nbtManager;
 
     @Metadata(value = Reference.MODID)
-    public static ModMetadata       metadata;
-
-    @SidedProxy(clientSide = Reference.PROXY_CLIENT, serverSide = Reference.PROXY_COMMON)
-    public static CommonProxy       proxy;
+    public static ModMetadata metadata;
 
     @Instance(value = Reference.MODID)
-    public static TreecapitatorMod  instance;
+    public static TreecapitatorMod instance;
+
+    @SidedProxy(clientSide = Reference.PROXY_CLIENT, serverSide = Reference.PROXY_COMMON)
+    public static CommonProxy proxy;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -72,9 +79,15 @@ public class TreecapitatorMod
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        MinecraftForge.EVENT_BUS.register(new ForgeEventHandler());
-        MinecraftForge.EVENT_BUS.register(TCConfigHandler.instance());
+        FMLCommonHandler.instance().bus().register(new ForgeEventHandler());
+        FMLCommonHandler.instance().bus().register(TCConfigHandler.instance());
         proxy.init(event);
+
+        if (bspkrsCoreMod.instance.allowUpdateCheck)
+        {
+            versionChecker = new ModVersionChecker(metadata.name, metadata.version, versionURL, mcfTopic);
+            versionChecker.checkVersionWithLogging();
+        }
     }
 
     @EventHandler

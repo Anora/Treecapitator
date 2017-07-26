@@ -29,7 +29,7 @@ public enum TCLog
         if (logger != null)
             return;
 
-        logger = LogManager.getLogger("Treecapitator");
+        logger = LogManager.getLogger("treecapitator");
     }
 
     public static void info(String format, Object... args)

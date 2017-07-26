@@ -351,7 +351,7 @@ public class TreeRegistry
         NBTTagList l = ntc.getTagList(Reference.TREE_DEFS, (byte) 10);
         for (int i = 0; i < l.tagCount(); i++)
         {
-            NBTTagCompound treeNBT = l.getCompoundTagAt(i);;
+            NBTTagCompound treeNBT = l.getCompoundTagAt(i);
             treeDefs.put(treeNBT.getString(Reference.TREE_NAME), new TreeDefinition(treeNBT));
         }
 
